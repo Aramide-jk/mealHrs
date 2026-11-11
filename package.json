@@ -1,0 +1,18 @@
+{
+  "name": "mealhrs",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.3.4",
+  "scripts": {
+    "dev": "turbo dev --filter=@mealhrs/web",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:e2e": "pnpm --filter @mealhrs/web test:e2e"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.0"
+  }
+}

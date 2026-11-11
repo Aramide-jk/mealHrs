@@ -1,0 +1,46 @@
+:root {
+  color-scheme: light;
+
+  --color-green-700: #185437;
+  --color-green-600: #1f6b45;
+  --color-green-100: #eaf4ee;
+  --color-green-050: #f4f8f5;
+  --color-orange-600: #a84014;
+  --color-orange-500: #ed6a2c;
+  --color-canvas: #fcfaf5;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f6f4ef;
+  --color-ink: #19231d;
+  --color-ink-soft: #405047;
+  --color-muted: #66736b;
+  --color-muted-strong: #5f6d64;
+  --color-line: #e2e7e3;
+  --color-line-strong: #ccd5cf;
+  --color-danger: #b83f3f;
+  --color-danger-soft: #fff1f1;
+  --color-warning: #9a6513;
+  --color-warning-soft: #fff7e7;
+  --color-info: #326d9c;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-small: 0 6px 20px rgba(25, 35, 29, 0.07);
+  --shadow-sheet: 0 16px 44px rgba(25, 35, 29, 0.09);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --content-desktop: 73.75rem;
+  --header-height: 4.25rem;
+  --mobile-nav-height: 4.5rem;
+}

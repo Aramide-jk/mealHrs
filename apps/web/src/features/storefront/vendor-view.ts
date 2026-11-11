@@ -1,0 +1,2 @@
+import type { DeliveryEligibility } from "@mealhrs/domain";
+export function vendorServiceCopy(vendorName:string,eligibility:DeliveryEligibility){if(eligibility.status==="eligible")return `${vendorName} delivers to Ikotun. Delivery fee ${eligibility.deliveryFee.amount.toLocaleString("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0})}.`;if(eligibility.status==="pickup_only")return `${eligibility.reason} ${eligibility.pickupWindow}`;return eligibility.reason;}
