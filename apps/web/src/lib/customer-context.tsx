@@ -8,11 +8,14 @@ export type ActiveArea = Readonly<{ id: AreaId; name: string; state: string }>;
 type CustomerContextValue = Readonly<{
   activeArea: ActiveArea;
   availableAreas: readonly ActiveArea[];
+  addPreviewArea: (area: ActiveArea) => void;
   setActiveArea: (area: ActiveArea) => void;
   isSignedIn: boolean;
   setSignedIn: (value: boolean) => void;
   pendingIntent: string | null;
   setPendingIntent: (path: string | null) => void;
+  isVendorCustomerView: boolean;
+  startVendorCustomerView: () => void;
 }>;
 
 const CustomerContext = createContext<CustomerContextValue | null>(null);
@@ -24,31 +27,39 @@ const defaultArea: ActiveArea = {
 };
 
 export function CustomerContextProvider({ children, initialAreaId, initialAreas }: { children: ReactNode; initialAreaId?: AreaId; initialAreas: readonly ActiveArea[] }) {
-  const availableAreas = useMemo(
-    () => (initialAreas.length ? initialAreas : [defaultArea]),
-    [initialAreas],
-  );
+  const [availableAreas, setAvailableAreas] = useState<readonly ActiveArea[]>(() => initialAreas.length ? initialAreas : [defaultArea]);
   const [activeArea, setActiveAreaState] = useState(
     availableAreas.find((area) => area.id === initialAreaId) ?? availableAreas[0] ?? defaultArea,
   );
   const [isSignedIn, setSignedIn] = useState(true);
   const [pendingIntent, setPendingIntent] = useState<string | null>(null);
+  const [isVendorCustomerView, setVendorCustomerView] = useState(false);
+
+  const startVendorCustomerView = useCallback(() => {
+    setVendorCustomerView(true);
+  }, []);
   const setActiveArea = useCallback((area: ActiveArea) => {
     document.cookie = `mealhrs_active_area=${area.id}; Path=/; Max-Age=31536000; SameSite=Lax`;
     setActiveAreaState(area);
+  }, []);
+  const addPreviewArea = useCallback((area: ActiveArea) => {
+    setAvailableAreas((current) => current.some((item) => item.id === area.id) ? current : [...current, area]);
   }, []);
 
   const value = useMemo(
     () => ({
       activeArea,
       availableAreas,
+      addPreviewArea,
       setActiveArea,
       isSignedIn,
       setSignedIn,
       pendingIntent,
       setPendingIntent,
+      isVendorCustomerView,
+      startVendorCustomerView,
     }),
-    [activeArea, availableAreas, isSignedIn, pendingIntent, setActiveArea],
+    [activeArea, availableAreas, addPreviewArea, isSignedIn, pendingIntent, setActiveArea, isVendorCustomerView, startVendorCustomerView],
   );
 
   return <CustomerContext.Provider value={value}>{children}</CustomerContext.Provider>;

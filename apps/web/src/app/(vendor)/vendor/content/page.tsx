@@ -5,5 +5,12 @@ import { notFound } from "next/navigation";
 export default async function VendorContentPage() {
   const result = await repositories.vendor.getDashboard();
   if (!result.ok) notFound();
-  return <VendorContentView contentDrafts={result.data.contentDrafts} menu={result.data.menu} posts={result.data.posts}/>;
+  return (
+    <VendorContentView
+      contentDrafts={result.data.contentDrafts}
+      menu={result.data.menu}
+      posts={result.data.posts}
+      postInsights={result.data.postInsights}
+    />
+  );
 }

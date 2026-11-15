@@ -243,7 +243,14 @@ export const posts: readonly SocialPost[] = [
     vendorId: asVendorId("vendor-mama-k"),
     caption: "Egusi simmering slowly for Sunday. Pre-orders close this evening.",
     publishedAt: "2026-11-07T08:05:00+01:00",
-    media: { kind: "image", src: "/assets/egusi-pounded-yam.png", width: 960, height: 1280, alt: "Egusi soup served with pounded yam" },
+    media: {
+      kind: "carousel",
+      items: [
+        { kind: "image", src: "/assets/egusi-pounded-yam.png", width: 960, height: 1280, alt: "Egusi soup served with pounded yam" },
+        { kind: "image", src: "/assets/hero-jollof.png", width: 960, height: 1280, alt: "Freshly prepared food ready for serving" },
+        { kind: "image", src: "/assets/bakery-drop.png", width: 960, height: 1280, alt: "A carefully packed customer food order" },
+      ],
+    },
     linkedOfferId: asOfferId("offer-egusi-preorder"),
     engagement: { likes: 1180, comments: 64, saves: 211 },
   },

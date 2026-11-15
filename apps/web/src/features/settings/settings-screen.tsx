@@ -55,7 +55,7 @@ export function SettingsScreen({ profile }: Readonly<{ profile: CustomerProfile 
         <section className={`surface-section ${styles.settingsGroup}`} aria-labelledby="notification-settings-title">
           <h2 id="notification-settings-title">Notifications</h2>
           <div className={styles.settingRow}><div><strong>Order updates</strong><small>Payment, preparation and delivery events</small></div><PreferenceSwitch checked={preferences.orders} id="order-updates" label="Order updates" onChange={() => toggle("orders", "Order updates")} /></div>
-          <div className={styles.settingRow}><div><strong>Meal Drop reminders</strong><small>Upcoming cutoffs from followed kitchens</small></div><PreferenceSwitch checked={preferences.drops} id="drop-reminders" label="Meal Drop reminders" onChange={() => toggle("drops", "Meal Drop reminders")} /></div>
+          <div className={styles.settingRow}><div><strong>Pre-order reminders</strong><small>Upcoming cutoffs from followed kitchens</small></div><PreferenceSwitch checked={preferences.drops} id="drop-reminders" label="Pre-order reminders" onChange={() => toggle("drops", "Pre-order reminders")} /></div>
           <div className={styles.settingRow}><div><strong>New posts from followed kitchens</strong><small>In-app notifications only</small></div><PreferenceSwitch checked={preferences.posts} id="post-notifications" label="New posts from followed kitchens" onChange={() => toggle("posts", "New posts from followed kitchens")} /></div>
         </section>
         <section className={`surface-section ${styles.settingsGroup}`} aria-labelledby="accessibility-settings-title">

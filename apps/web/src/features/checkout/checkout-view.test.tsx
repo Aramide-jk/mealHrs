@@ -14,7 +14,7 @@ describe("CheckoutView", () => {
     expect(screen.getAllByText("₦8,000")).toHaveLength(2);
     expect(screen.getByText("₦9,450")).toBeInTheDocument();
     fireEvent.change(screen.getByRole("combobox", { name: /Preview address state/ }), { target: { value: outside.areaId } });
-    expect(screen.getByRole("button", { name: "Continue to simulated payment" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Review unavailable meals" })).toBeDisabled();
     expect(screen.getByRole("alert")).toHaveTextContent("Outside delivery area");
     expect(deliveredOrder.total.amount).toBe(9450);
   });

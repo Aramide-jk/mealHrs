@@ -21,15 +21,16 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const [areasResult, initialAreaId] = await Promise.all([
+  const [areasResult, vendorDashboardResult, initialAreaId] = await Promise.all([
     repositories.delivery.getAreas(),
+    repositories.vendor.getDashboard(),
     getActiveAreaId(),
   ]);
   const initialAreas = areasResult.ok ? areasResult.data : [];
   return (
     <html lang="en-NG">
       <body>
-        <Providers initialAreaId={initialAreaId} initialAreas={initialAreas}>{children}</Providers>
+        <Providers initialAreaId={initialAreaId} initialAreas={initialAreas} vendorDashboard={vendorDashboardResult.ok ? vendorDashboardResult.data : null}>{children}</Providers>
       </body>
     </html>
   );

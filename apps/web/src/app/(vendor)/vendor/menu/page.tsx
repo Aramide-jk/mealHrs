@@ -5,5 +5,5 @@ import { notFound } from "next/navigation";
 export default async function VendorMenuPage() {
   const result = await repositories.vendor.getDashboard();
   if (!result.ok) notFound();
-  return <VendorMenuView menu={result.data.menu}/>;
+  return <VendorMenuView menu={result.data.menu} operatingSchedule={result.data.operatingSchedule} />;
 }

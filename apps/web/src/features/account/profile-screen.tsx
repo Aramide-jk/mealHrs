@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import type { CustomerProfile, Order } from "@mealhrs/domain";
-import { Bell, Bookmark, ChevronRight, Heart, HelpCircle, LogOut, MapPin, Settings, UserRound } from "lucide-react";
+import { Bell, Bookmark, ChevronRight, Heart, HelpCircle, LogOut, MapPin, Settings, Store, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import styles from "./account.module.css";
 
 export function ProfileScreen({ activeOrder, profile }: Readonly<{ activeOrder: Order | null; profile: CustomerProfile }>) {
   const router = useRouter();
-  const { isSignedIn, setPendingIntent, setSignedIn } = useCustomerContext();
+  const { isSignedIn, isVendorCustomerView, setPendingIntent, setSignedIn } = useCustomerContext();
 
   if (!isSignedIn) {
     return (
@@ -57,6 +57,9 @@ export function ProfileScreen({ activeOrder, profile }: Readonly<{ activeOrder: 
           <section className="surface-section" aria-labelledby="account-links-title">
             <div className={styles.sectionTitle}><h2 id="account-links-title">Account</h2></div>
             <div className={styles.listLinks}>
+              {isVendorCustomerView ? (
+                <Link className={styles.listLink} href="/vendor"><span><Store aria-hidden="true" size={17} /></span>Vendor Dashboard<ChevronRight aria-hidden="true" size={17} /></Link>
+              ) : null}
               <Link className={styles.listLink} href="/profile/settings"><span><Settings aria-hidden="true" size={17} /></span>Preferences and privacy<ChevronRight aria-hidden="true" size={17} /></Link>
               <Link className={styles.listLink} href="/support"><span><HelpCircle aria-hidden="true" size={17} /></span>Help and support<ChevronRight aria-hidden="true" size={17} /></Link>
               <Dialog.Root>

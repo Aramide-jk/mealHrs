@@ -7,11 +7,15 @@ const vendorRoutes = [
   "/vendor/menu",
   "/vendor/drops",
   "/vendor/content",
+  "/vendor/customers",
   "/vendor/delivery",
   "/vendor/earnings",
   "/vendor/analytics",
   "/vendor/storefront",
   "/vendor/settings",
+  "/vendor/verification",
+  "/vendor/notifications",
+  "/vendor/support",
 ] as const;
 
 for (const route of vendorRoutes) {
@@ -27,18 +31,20 @@ for (const route of vendorRoutes) {
 test("vendor operational previews remain local and separate", async ({ page, isMobile }) => {
   await page.goto("/vendor");
   await page.getByRole("button", { name: "Pause orders" }).click();
-  await expect(page.getByText("Orders paused")).toBeVisible();
+  await expect(page.getByText("Orders paused").first()).toBeVisible();
 
   await page.goto("/vendor/orders");
   await expect(page.getByRole("region", { name: "Order status summary" })).toContainText("New");
   await expect(page.getByRole("region", { name: "Order status summary" })).toContainText("Due soon");
   await expect(page.getByText("Placed 14 min ago")).toBeVisible();
   await expect(page.getByText("Paid — frontend preview").first()).toBeVisible();
+
   const orderStatus = page.getByRole("combobox", { name: "Order status" });
   await expect(orderStatus).toHaveValue("all");
   await orderStatus.selectOption("preparing");
   await expect(page.getByRole("tabpanel")).toContainText("Teni Adebayo");
   await orderStatus.selectOption("all");
+
   await page.getByLabel("Sort orders").selectOption("priority");
   await expect(page.getByLabel("Sort orders")).toHaveValue("priority");
   await page.getByRole("button", { name: "Delivery" }).click();
@@ -47,6 +53,7 @@ test("vendor operational previews remain local and separate", async ({ page, isM
   await expect(page.getByRole("heading", { name: "No matching immediate orders" })).toBeVisible();
   await page.getByPlaceholder("Search order, customer or meal").fill("");
   await page.getByRole("button", { name: "All fulfilment" }).click();
+
   const details = page.getByRole("button", { name: "Details" }).first();
   await details.click();
   if (isMobile) {
@@ -65,18 +72,27 @@ test("vendor operational previews remain local and separate", async ({ page, isM
     await expect(panel).toContainText("Fulfilment timeline");
     await expect(page.getByRole("dialog")).toHaveCount(0);
   }
+
   const advanceOrder = isMobile
     ? page.getByRole("tabpanel").getByRole("button", { name: "Mark ready" })
     : page.getByRole("complementary", { name: "Selected order details" }).getByRole("button", { name: "Mark ready" });
   await advanceOrder.click();
-  await expect(page.getByRole("status")).toContainText(/marked ready in this frontend preview only/i);
+  await expect(page.getByRole("status").first()).toContainText(/marked ready in this frontend preview only/i);
   await expect(page.getByRole("region", { name: "Order status summary" })).toContainText("Ready");
-  if (!isMobile) await expect(page.getByRole("complementary", { name: "Selected order details" })).toContainText("ready");
+  if (!isMobile) {
+    await expect(page.getByRole("complementary", { name: "Selected order details" })).toContainText("Dispatch");
+  }
+
+  await page.getByRole("button", { name: "Preparation list" }).click();
+  await expect(page.getByRole("dialog", { name: "Preparation list" })).toContainText("Jollof Rice & Chicken");
+  await page.keyboard.press("Escape");
+
   await page.getByRole("tab", { name: /Meal Drops/ }).click();
   await expect(page.getByText("Pre-ordered yesterday")).toBeVisible();
   await expect(page.getByRole("region", { name: "Meal Drop preparation summary" })).toContainText("Batch prep starts Sunday, 11:30 AM");
   await expect(page.getByRole("region", { name: "Meal Drop preparation summary" })).toContainText("23 of 40 portions reserved");
   await expect(page.getByRole("region", { name: "Meal Drop preparation summary" })).toContainText("2 portions to prepare");
+
   await page.getByRole("tab", { name: /Immediate/ }).click();
   await expect(page.getByRole("tabpanel")).toContainText("Teni Adebayo");
   const immediate = page.getByRole("tab", { name: /Immediate/ });
@@ -91,6 +107,10 @@ test("vendor operational previews remain local and separate", async ({ page, isM
   await page.goto("/vendor/drops");
   await expect(page.getByRole("button", { name: "Cutoff passed" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Close pre-orders" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Create Meal Drop" }).click();
+  await page.getByLabel("Drop name").fill("Friday Party Tray Drop");
+  await page.getByRole("button", { name: "Publish drop preview" }).click();
+  await expect(page.getByRole("button", { name: "Close pre-orders" })).toBeEnabled();
 
   await page.goto("/vendor/earnings");
   await expect(page.locator("main")).toContainText(/no payout transfer is connected/i);
@@ -105,6 +125,11 @@ test("vendor content and delivery controls provide frontend feedback", async ({ 
   const zone = page.getByRole("button", { name: /Pause Ikotun delivery/ });
   await zone.click();
   await expect(page.getByRole("button", { name: /Enable Ikotun delivery/ })).toHaveAttribute("aria-pressed", "false");
+
+  await page.getByRole("button", { name: "Add zone" }).click();
+  await page.getByLabel("Area name").fill("Surulere");
+  await page.getByRole("button", { name: "Add zone preview" }).click();
+  await expect(page.locator("main")).toContainText("Surulere");
 });
 
 test("vendor menu renders compact dish cards and adds a local preview dish", async ({ page }) => {
@@ -113,19 +138,37 @@ test("vendor menu renders compact dish cards and adds a local preview dish", asy
   await page.getByRole("button", { name: "Add dish" }).click();
   await page.getByLabel("Dish name").fill("Catfish pepper soup");
   await page.getByLabel("Price (₦)").fill("4200");
+  await page.getByRole("button", { name: "Add protein" }).click();
+  await page.getByLabel("Protein choices option 1 name").fill("Fresh catfish");
+  await page.getByLabel("Protein choices option 1 extra price").fill("500");
+  await page.getByRole("button", { name: "Add extra" }).click();
+  await page.getByLabel("Extras & sides option 1 name").fill("Boiled yam");
+  await page.getByLabel("Extras & sides option 1 extra price").fill("700");
   await page.getByRole("button", { name: "Add to preview menu" }).click();
   await expect(page.getByRole("status")).toContainText("Catfish pepper soup was added to this frontend preview only.");
   await expect(page.getByRole("region", { name: "Immediate menu dishes" })).toContainText("Catfish pepper soup");
+  await expect(page.getByRole("region", { name: "Immediate menu dishes" })).toContainText("1 protein · 1 extra");
   await expect(page.getByLabel("Set Catfish pepper soup availability")).toBeChecked();
 });
 
-test("vendor forms and mobile navigation remain reachable and labelled", async ({ page, isMobile }) => {
+test("vendor forms, new vendor sections, and mobile navigation remain reachable and labelled", async ({ page, isMobile }) => {
   await page.goto("/vendor/storefront");
   await expect(page.getByLabel("Kitchen name")).toBeVisible();
   await expect(page.getByLabel("Kitchen story")).toBeVisible();
+
+  await page.goto("/vendor/customers");
+  await expect(page.locator("main")).toContainText("Teni Adebayo");
+
+  await page.goto("/vendor/verification");
+  await expect(page.locator("main")).toContainText("Business verification");
+
   if (isMobile) {
-    await page.getByRole("button", { name: "More" }).click();
+    const more = page.getByRole("button", { name: "More" });
+    await more.click();
     await expect(page.getByRole("link", { name: "Delivery" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("navigation", { name: "More vendor pages" })).toHaveCount(0);
+    await expect(more).toBeFocused();
   }
 });

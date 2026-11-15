@@ -5,8 +5,11 @@ import { useState, type ReactNode } from "react";
 import { CustomerContextProvider } from "./customer-context";
 import type { ActiveArea } from "./customer-context";
 import type { AreaId } from "@mealhrs/domain";
+import type { VendorDashboardSnapshot } from "@mealhrs/domain";
+import { MenuPreviewProvider } from "./menu-preview-context";
+import { DeliveryPreviewProvider } from "./delivery-preview-context";
 
-export function Providers({ children, initialAreaId, initialAreas }: { children: ReactNode; initialAreaId: AreaId; initialAreas: readonly ActiveArea[] }) {
+export function Providers({ children, initialAreaId, initialAreas, vendorDashboard }: { children: ReactNode; initialAreaId: AreaId; initialAreas: readonly ActiveArea[]; vendorDashboard: VendorDashboardSnapshot | null }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -23,7 +26,9 @@ export function Providers({ children, initialAreaId, initialAreas }: { children:
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CustomerContextProvider initialAreaId={initialAreaId} initialAreas={initialAreas}>{children}</CustomerContextProvider>
+      <CustomerContextProvider initialAreaId={initialAreaId} initialAreas={initialAreas}>
+        <DeliveryPreviewProvider dashboard={vendorDashboard}><MenuPreviewProvider dashboard={vendorDashboard}>{children}</MenuPreviewProvider></DeliveryPreviewProvider>
+      </CustomerContextProvider>
     </QueryClientProvider>
   );
 }

@@ -45,6 +45,18 @@ test("the approved Manrope font is available", async ({ page }) => {
   await expect.poll(() => page.evaluate(() => document.fonts.check('16px "Manrope"'))).toBe(true);
 });
 
+test("vendor customer view provides a dashboard return from Profile", async ({ page }) => {
+  await page.goto("/vendor");
+  await page.getByRole("link", { name: "Customer view" }).click();
+  await expect(page).toHaveURL(/\/discover$/);
+
+  await page.goto("/profile");
+  const dashboard = page.getByRole("link", { name: "Vendor Dashboard" });
+  await expect(dashboard).toHaveAttribute("href", "/vendor");
+  await dashboard.click();
+  await expect(page).toHaveURL(/\/vendor$/);
+});
+
 test("dynamic discovery records never leak the Jollof fixture", async ({ page }) => {
   await page.goto("/dishes/dish-egusi");
   await expect(page.getByRole("heading", { level: 1, name: /Egusi/ })).toBeVisible();

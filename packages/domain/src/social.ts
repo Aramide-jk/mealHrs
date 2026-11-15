@@ -1,13 +1,25 @@
 import type { OfferId, SocialPostId, VendorId } from "./ids";
 
-export type MediaAsset = Readonly<{
-  kind: "image" | "video";
+type MediaAssetBase = Readonly<{
   src: string;
-  poster?: string;
   width: number;
   height: number;
   alt: string;
 }>;
+
+export type ImageMediaAsset = MediaAssetBase & Readonly<{ kind: "image" }>;
+
+export type VideoMediaAsset = MediaAssetBase & Readonly<{
+  kind: "video";
+  poster?: string;
+}>;
+
+export type CarouselMediaAsset = Readonly<{
+  kind: "carousel";
+  items: readonly ImageMediaAsset[];
+}>;
+
+export type MediaAsset = ImageMediaAsset | VideoMediaAsset | CarouselMediaAsset;
 
 export type SocialPost = Readonly<{
   id: SocialPostId;

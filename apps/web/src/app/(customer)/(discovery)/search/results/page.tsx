@@ -1,11 +1,10 @@
-import { formatMoney } from "@mealhrs/domain";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Status } from "@/components/ui/status";
 import styles from "@/features/discovery/discovery.module.css";
 import { ResultRow } from "@/features/discovery/result-row";
 import { areaName } from "@/features/location/area-copy";
-import { isCutoffPassed } from "@/features/meal-drops/effective-availability";
+import { PreviewSearchMeals } from "@/features/search/preview-menu-results";
 import { SearchResults } from "@/features/search/search-results";
 import { getActiveAreaId } from "@/lib/active-area";
 import { repositories } from "@/lib/repositories";
@@ -17,10 +16,16 @@ export default async function ResultsPage({ searchParams }: Readonly<{ searchPar
   if (!result.ok) throw new Error(result.error.message);
   const data = result.data;
   const now = new Date().toISOString();
+  const storyPreview = (post: (typeof data.posts)[number]) => {
+    if (post.media.kind === "carousel") return post.media.items[0];
+    return post.media.kind === "video"
+      ? { src: post.media.poster ?? post.media.src, alt: post.media.alt }
+      : post.media;
+  };
   const tabs = [
-    { id: "meals", label: "Meals", panel: data.dishes.length ? <div className={styles.resultList}>{data.dishes.map(({ dish, offer, vendor }) => { const expired = offer.availability.status === "preorder" && isCutoffPassed(offer.availability.cutoffAt, now); return <ResultRow key={offer.id} href={offer.orderingMode === "meal_drop" ? `/drops/${offer.mealDropId}` : `/dishes/${dish.id}`} imageUrl={dish.imageUrl} imageAlt={dish.name} title={dish.name} description={`${vendor.name} · ${vendor.publicArea}`} meta={<span className={styles.split}><Status tone={expired ? "neutral" : offer.orderingMode === "meal_drop" ? "warning" : "success"}>{expired ? "Cutoff passed" : offer.orderingMode === "meal_drop" ? "Pre-order" : "Available now"}</Status><strong>{formatMoney(offer.price)}</strong></span>} />; })}</div> : <div className={styles.empty}><p>No meals matched this search.</p></div> },
+    { id: "meals", label: "Meals", panel: <PreviewSearchMeals query={query} seed={data.dishes} now={now} /> },
     { id: "kitchens", label: "Kitchens", panel: data.vendors.length ? <div className={styles.resultList}>{data.vendors.map(vendor => <ResultRow key={vendor.id} href={`/k/${vendor.slug}`} imageUrl={vendor.avatarUrl} imageAlt={vendor.name} title={vendor.name} description={`Verified · ${vendor.rating} · ${vendor.publicArea}`} meta={<Status>Accepting orders</Status>} />)}</div> : <div className={styles.empty}><p>No kitchens matched this search.</p></div> },
-    { id: "videos", label: "Videos", panel: data.posts.length ? <div className={styles.resultList}>{data.posts.map(post => <ResultRow key={post.id} href="/discover" imageUrl={post.media.poster ?? post.media.src} imageAlt={post.media.alt} title={post.caption} description="Food story" />)}</div> : <div className={styles.empty}><p>No food stories matched this search.</p></div> },
+    { id: "videos", label: "Videos", panel: data.posts.length ? <div className={styles.resultList}>{data.posts.map(post => { const preview = storyPreview(post); return <ResultRow key={post.id} href="/discover" imageUrl={preview?.src ?? "/assets/hero-jollof.png"} imageAlt={preview?.alt ?? "Food story"} title={post.caption} description="Food story" />; })}</div> : <div className={styles.empty}><p>No food stories matched this search.</p></div> },
   ] as const;
   const empty = !data.dishes.length && !data.vendors.length && !data.posts.length;
   const location = areaName(activeAreaId);

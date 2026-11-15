@@ -9,6 +9,7 @@ export type Dish = Readonly<{
   description: string;
   category: string;
   imageUrl: string;
+  imageUrls?: readonly string[];
   allergens: readonly string[];
   optionGroups: readonly DishOptionGroup[];
 }>;
