@@ -29,6 +29,7 @@ import {
   type VendorOrderStage,
 } from "./vendor-order-helpers";
 import styles from "./vendor-operations.module.css";
+import { useCustomerActivity } from "@/lib/customer-activity-context";
 
 type OrderState = "immediate" | "drop";
 type FulfillmentFilter = "all" | "delivery" | "pickup";
@@ -59,6 +60,7 @@ export function VendorOrdersView({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [query, setQuery] = useState("");
+  const { updateOrderStage, getOrderStage } = useCustomerActivity();
   const [stages, setStages] = useState<Record<string, VendorOrderStage>>({});
   const [cancelNotes, setCancelNotes] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState("");
@@ -72,7 +74,8 @@ export function VendorOrdersView({
   const allOrders = useMemo(() => [...immediateOrders, ...mealDropOrders], [immediateOrders, mealDropOrders]);
   const activeIndex = tabs.indexOf(tab);
 
-  const getStage = (order: VendorOrder): VendorOrderStage => stages[order.id] ?? initialOrderStage(order);
+  const getStage = (order: VendorOrder): VendorOrderStage =>
+    stages[order.id] ?? getOrderStage(order.reference) ?? getOrderStage(order.id) ?? initialOrderStage(order);
 
   const source = (tab === "immediate" ? immediateOrders : mealDropOrders).filter(
     (order) => order.orderingMode === (tab === "immediate" ? "immediate" : "meal_drop"),
@@ -116,6 +119,8 @@ export function VendorOrdersView({
     const current = getStage(order);
     const updated = nextStage(current, order.fulfillmentMode);
     setStages((prev) => ({ ...prev, [order.id]: updated }));
+    updateOrderStage(order.reference, updated);
+    updateOrderStage(order.id, updated);
     setSelectedId(order.id);
     setFeedback(`${order.reference} is marked ${stageLabel(updated)} in this frontend preview only.`);
   };
@@ -126,8 +131,11 @@ export function VendorOrdersView({
     const form = new FormData(event.currentTarget);
     const reason = String(form.get("reason") ?? "Kitchen capacity reached");
     const note = String(form.get("note") ?? "").trim();
+    const fullReason = note ? `${reason} — ${note}` : reason;
     setStages((prev) => ({ ...prev, [cancelOrder.id]: "cancelled" }));
-    setCancelNotes((prev) => ({ ...prev, [cancelOrder.id]: note ? `${reason} — ${note}` : reason }));
+    setCancelNotes((prev) => ({ ...prev, [cancelOrder.id]: fullReason }));
+    updateOrderStage(cancelOrder.reference, "cancelled", fullReason);
+    updateOrderStage(cancelOrder.id, "cancelled", fullReason);
     setFeedback(
       `${cancelOrder.reference} marked cancelled (${reason}) in this frontend preview. No customer refund was issued.`,
     );
@@ -465,7 +473,7 @@ function OrderTabs({
           onKeyDown={(event) => onArrow(event.key)}
           onClick={() => onChange(candidate)}
         >
-          {candidate === "immediate" ? `Immediate Orders (${immediateCount})` : `Pre-order Batches (${dropCount})`}
+          {candidate === "immediate" ? `Immediate (${immediateCount})` : `Meal Drops (${dropCount})`}
         </button>
       ))}
     </div>
@@ -546,7 +554,7 @@ function QueueTools({
 
 function MealDropSummary({ context }: Readonly<{ context: NonNullable<VendorOrder["operational"]["mealDrop"]> }>) {
   return (
-    <section className={`card ${styles.dropSummary}`} aria-label="Pre-order batch preparation summary">
+    <section className={`card ${styles.dropSummary}`} aria-label="Meal Drop preparation summary">
       <CalendarDays aria-hidden="true" />
       <div>
         <strong>{context.name}</strong>
@@ -748,6 +756,12 @@ function OrderDetails({
         <div>
           <strong>{order.customer.name}</strong>
           <span>{order.customer.phoneMasked}</span>
+          <div style={{ marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <span className="status status--success" style={{ fontSize: "0.62rem", padding: "2px 6px" }}>Verified Customer</span>
+            {order.fulfillmentMode === "pickup" ? (
+              <span className="status status--warning" style={{ fontSize: "0.62rem", padding: "2px 6px" }}>Pickup PIN: 4821</span>
+            ) : null}
+          </div>
         </div>
         <Button size="sm" variant="secondary" onClick={() => onContact(order)}>
           <MessageCircle aria-hidden="true" />

@@ -1,18 +1,20 @@
 "use client";
 
-import { Bell, ChevronDown, ExternalLink, HelpCircle, ShieldCheck } from "lucide-react";
+import { Bell, ChevronDown, ExternalLink, Flame, HelpCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/ui/logo";
 import { useVendorWorkspace } from "@/features/vendor/vendor-workspace-context";
 import { useCustomerContext } from "@/lib/customer-context";
+import { useAdminActivity } from "@/lib/admin-activity-context";
 import { VendorNavigation } from "./vendor-navigation";
 
 export function VendorShell({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
   const { acceptsOrders, displayName, pauseImmediate, pausePreorders, slug, unreadNotifications } = useVendorWorkspace();
   const { startVendorCustomerView } = useCustomerContext();
+  const { emergencyKillSwitchEnabled, maintenanceBannerEnabled } = useAdminActivity();
 
   if (pathname === "/vendor/onboarding") {
     return (
@@ -98,6 +100,43 @@ export function VendorShell({ children }: Readonly<{ children: ReactNode }>) {
             </Link>
           </div>
         </header>
+        {emergencyKillSwitchEnabled ? (
+          <aside
+            role="alert"
+            style={{
+              background: "#991b1b",
+              color: "#fff",
+              padding: "9px 18px",
+              fontSize: "0.74rem",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Flame size={15} aria-hidden="true" />
+            <span>
+              <strong>Platform Notice:</strong> Emergency Immediate Ordering Kill-Switch is active across Lagos. Immediate customer checkouts are paused; scheduled pre-orders remain open.
+            </span>
+          </aside>
+        ) : maintenanceBannerEnabled ? (
+          <aside
+            role="status"
+            style={{
+              background: "var(--color-green-700)",
+              color: "#fff",
+              padding: "9px 18px",
+              fontSize: "0.74rem",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <ShieldCheck size={15} aria-hidden="true" />
+            <span>Platform maintenance mode is active. Kitchen operations remain live.</span>
+          </aside>
+        ) : null}
         <main id="main-content" className="vendor-content">
           {children}
         </main>

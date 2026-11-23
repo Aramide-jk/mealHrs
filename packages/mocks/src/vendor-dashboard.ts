@@ -174,6 +174,8 @@ export const vendorDashboard: VendorDashboardSnapshot = {
     mode: "both",
     addressNote: "Shared privately only after an eligible pickup order is confirmed.",
     windowNote: "Daily 11:00 AM–7:30 PM",
+    pickupAddress: "14 Adeola Odeku St, Victoria Island, Lagos",
+    landmark: "Beside Silverbird Galleria",
   },
   operatingSchedule: {
     weeklyHours: [
@@ -320,12 +322,21 @@ export const vendorDashboard: VendorDashboardSnapshot = {
     accentPreset: "herb",
     acceptsOrders: vendor.acceptsOrders,
     coverUrl: vendor.coverUrl,
+    avatarUrl: "/assets/approved-reels-reference.png",
+    announcementNotice: "Weekend party jollof pre-orders close every Friday at 6:00 PM.",
+    announcementEnabled: true,
+    specialtyTags: ["100% Homemade", "Halal", "Party Catering", "No MSG"],
+    whatsAppPhone: "+234 803 000 1190",
   },
   settings: {
     orderNotifications: true,
     mealDropReminders: true,
     defaultPreparationEstimate: "25–35 min",
     supportEmail: "support@mealhrs.example",
+    autoAcceptOrders: false,
+    whatsAppNotifications: true,
+    smsNotifications: true,
+    emailDigest: true,
   },
   notifications: [
     {

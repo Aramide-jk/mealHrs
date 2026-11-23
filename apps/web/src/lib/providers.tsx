@@ -8,8 +8,23 @@ import type { AreaId } from "@mealhrs/domain";
 import type { VendorDashboardSnapshot } from "@mealhrs/domain";
 import { MenuPreviewProvider } from "./menu-preview-context";
 import { DeliveryPreviewProvider } from "./delivery-preview-context";
+import { StorefrontPreviewProvider } from "./storefront-preview-context";
+import { CustomerActivityProvider } from "./customer-activity-context";
+import { AdminActivityProvider } from "./admin-activity-context";
 
-export function Providers({ children, initialAreaId, initialAreas, vendorDashboard }: { children: ReactNode; initialAreaId: AreaId; initialAreas: readonly ActiveArea[]; vendorDashboard: VendorDashboardSnapshot | null }) {
+export function Providers({
+  children,
+  initialAreaId,
+  initialAreas,
+  vendorDashboard,
+  initialIsVendorCustomerView = false,
+}: {
+  children: ReactNode;
+  initialAreaId: AreaId;
+  initialAreas: readonly ActiveArea[];
+  vendorDashboard: VendorDashboardSnapshot | null;
+  initialIsVendorCustomerView?: boolean;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -26,8 +41,20 @@ export function Providers({ children, initialAreaId, initialAreas, vendorDashboa
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CustomerContextProvider initialAreaId={initialAreaId} initialAreas={initialAreas}>
-        <DeliveryPreviewProvider dashboard={vendorDashboard}><MenuPreviewProvider dashboard={vendorDashboard}>{children}</MenuPreviewProvider></DeliveryPreviewProvider>
+      <CustomerContextProvider
+        initialAreaId={initialAreaId}
+        initialAreas={initialAreas}
+        initialIsVendorCustomerView={initialIsVendorCustomerView}
+      >
+        <StorefrontPreviewProvider dashboard={vendorDashboard}>
+          <DeliveryPreviewProvider dashboard={vendorDashboard}>
+            <MenuPreviewProvider dashboard={vendorDashboard}>
+              <CustomerActivityProvider>
+                <AdminActivityProvider>{children}</AdminActivityProvider>
+              </CustomerActivityProvider>
+            </MenuPreviewProvider>
+          </DeliveryPreviewProvider>
+        </StorefrontPreviewProvider>
       </CustomerContextProvider>
     </QueryClientProvider>
   );

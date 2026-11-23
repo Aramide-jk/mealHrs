@@ -56,6 +56,8 @@ export type VendorPickupSettings = Readonly<{
   mode: "delivery" | "pickup" | "both";
   addressNote: string;
   windowNote: string;
+  pickupAddress?: string;
+  landmark?: string;
 }>;
 
 export type VendorVerificationPreview = Readonly<{
@@ -194,6 +196,12 @@ export type VendorStorefrontSettings = Readonly<{
   accentPreset: "herb" | "warm" | "charcoal";
   acceptsOrders: boolean;
   coverUrl: string;
+  avatarUrl?: string;
+  announcementNotice?: string;
+  announcementEnabled?: boolean;
+  specialtyTags?: readonly string[];
+  whatsAppPhone?: string;
+  bio?: string;
 }>;
 
 export type VendorDashboardSettings = Readonly<{
@@ -201,6 +209,10 @@ export type VendorDashboardSettings = Readonly<{
   mealDropReminders: boolean;
   defaultPreparationEstimate: string;
   supportEmail: string;
+  autoAcceptOrders?: boolean;
+  whatsAppNotifications?: boolean;
+  smsNotifications?: boolean;
+  emailDigest?: boolean;
 }>;
 
 export type VendorDashboardSnapshot = Readonly<{

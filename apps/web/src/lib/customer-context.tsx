@@ -26,16 +26,29 @@ const defaultArea: ActiveArea = {
   state: "Lagos",
 };
 
-export function CustomerContextProvider({ children, initialAreaId, initialAreas }: { children: ReactNode; initialAreaId?: AreaId; initialAreas: readonly ActiveArea[] }) {
+export function CustomerContextProvider({
+  children,
+  initialAreaId,
+  initialAreas,
+  initialIsVendorCustomerView = false,
+}: {
+  children: ReactNode;
+  initialAreaId?: AreaId;
+  initialAreas: readonly ActiveArea[];
+  initialIsVendorCustomerView?: boolean;
+}) {
   const [availableAreas, setAvailableAreas] = useState<readonly ActiveArea[]>(() => initialAreas.length ? initialAreas : [defaultArea]);
   const [activeArea, setActiveAreaState] = useState(
     availableAreas.find((area) => area.id === initialAreaId) ?? availableAreas[0] ?? defaultArea,
   );
   const [isSignedIn, setSignedIn] = useState(true);
   const [pendingIntent, setPendingIntent] = useState<string | null>(null);
-  const [isVendorCustomerView, setVendorCustomerView] = useState(false);
+  const [isVendorCustomerView, setVendorCustomerView] = useState(initialIsVendorCustomerView);
 
   const startVendorCustomerView = useCallback(() => {
+    if (typeof document !== "undefined") {
+      document.cookie = "mealhrs_vendor_view=1; Path=/; Max-Age=86400; SameSite=Lax";
+    }
     setVendorCustomerView(true);
   }, []);
   const setActiveArea = useCallback((area: ActiveArea) => {

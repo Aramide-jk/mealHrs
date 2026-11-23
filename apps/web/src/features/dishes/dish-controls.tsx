@@ -2,7 +2,7 @@
 
 import type { DeliveryEligibility, Dish, MenuOffer, Vendor } from "@mealhrs/domain";
 import { formatMoney } from "@mealhrs/domain";
-import { Minus, Plus } from "lucide-react";
+import { Bookmark, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,21 +10,28 @@ import { Status } from "@/components/ui/status";
 import styles from "../discovery/discovery.module.css";
 import { addCartItem } from "@/features/cart/cart-store";
 import { isCutoffPassed } from "@/features/meal-drops/effective-availability";
+import { getCutoffCountdown } from "@/features/meal-drops/cutoff-countdown";
 import { isImmediateOrderingOpen, useMenuPreview } from "@/lib/menu-preview-context";
 import { useDeliveryPreview } from "@/lib/delivery-preview-context";
+import { useCustomerActivity } from "@/lib/customer-activity-context";
 
 export function DishControls({ areaName = "your area", dish, eligibility: initialEligibility, now, offer, vendor }: Readonly<{ areaName?: string; dish: Dish; eligibility: DeliveryEligibility; now?: string; offer: MenuOffer; vendor: Vendor }>) {
   const { items, schedule } = useMenuPreview();
+  const { isMealSaved, toggleSaveMeal } = useCustomerActivity();
   const deliveryPreview = useDeliveryPreview();
   const preview = items.find((item) => item.offer.id === offer.id || item.dish.id === dish.id);
   const currentDish = preview?.dish ?? dish;
   const currentOffer = preview?.offer ?? offer;
+  const saved = isMealSaved(currentDish.id) || isMealSaved(currentOffer.id);
   const eligibility = deliveryPreview.resolve(vendor.id, initialEligibility.areaId, currentOffer.orderingMode)?.eligibility ?? initialEligibility;
   const immediateClosed = currentOffer.orderingMode === "immediate" && !isImmediateOrderingOpen(schedule);
   const remainingToday = preview?.remainingToday ?? Number.POSITIVE_INFINITY;
   const [quantity,setQuantity] = useState(1);
   const [instructions,setInstructions] = useState("");
   const [selections,setSelections] = useState<Record<string,readonly string[]>>(() => Object.fromEntries(dish.optionGroups.map(group => [group.id, group.required && group.choices[0] ? [group.choices[0].id] : []])));
+  const cutoffCountdown = currentOffer.availability.status === "preorder" && Boolean(now)
+    ? getCutoffCountdown(currentOffer.availability.cutoffAt, now)
+    : null;
   const cutoffPassed = currentOffer.availability.status === "preorder" && Boolean(now) && isCutoffPassed(currentOffer.availability.cutoffAt, now!);
   const unavailable = Boolean(preview?.archived) || immediateClosed || remainingToday < 1 || cutoffPassed || currentOffer.availability.status === "unavailable" || eligibility.status === "outside_area" || eligibility.status === "delivery_paused" || (eligibility.status === "pickup_only" && !currentOffer.availableFulfillment.includes("pickup"));
   const total = currentOffer.price.amount + currentDish.optionGroups.flatMap((group) => group.choices).filter((choice) => Object.values(selections).flat().includes(choice.id)).reduce((sum, choice) => sum + choice.priceDelta.amount, 0);
@@ -33,6 +40,13 @@ export function DishControls({ areaName = "your area", dish, eligibility: initia
   const toggle = (groupId:string,choiceId:string,multiple:boolean) => setSelections(current => ({...current,[groupId]:multiple ? (current[groupId]?.includes(choiceId) ? current[groupId]?.filter(id=>id!==choiceId) ?? [] : [...(current[groupId]??[]),choiceId]) : [choiceId]}));
   return <div className={`${styles.detailPanel} ${styles.stack}`}>
     <div><Status tone={currentOffer.availability.status === "preorder" && !cutoffPassed ? "warning" : unavailable ? "neutral" : "success"}>{preview?.archived ? "Archived" : remainingToday < 1 ? "Sold out" : immediateClosed ? "Ordering closed" : cutoffPassed ? "Cutoff passed" : currentOffer.availability.status === "available_now" ? "Available now" : currentOffer.availability.status === "preorder" ? "Pre-order" : "Unavailable"}</Status><h1>{currentDish.name}</h1><p className={styles.small}><Link href={`/k/${vendor.slug}`}>{vendor.name}</Link> · {vendor.rating} verified rating</p><p>{currentDish.description}</p></div>
+    {cutoffCountdown && !cutoffPassed ? (
+      <div className={`${styles.dropBanner} ${cutoffCountdown.isUrgent ? styles.dropBannerUrgent : ""}`} role="status">
+        <strong>Order cutoff:</strong> {cutoffCountdown.cutoffDateFormatted}
+        <br />
+        <span>⏳ {cutoffCountdown.isUrgent ? "Closing soon: " : "Closes in: "}<strong>{cutoffCountdown.formattedCountdown}</strong> · Fulfillment: {timing}</span>
+      </div>
+    ) : null}
     <div className={styles.detailFacts}><div className={styles.fact}><small>{currentOffer.orderingMode === "immediate" ? "Preparation" : "Fulfillment"}</small><strong>{timing}</strong></div><div className={styles.fact}><small>{eligibility.status === "pickup_only" ? "Pickup" : "Delivery"}</small><strong>{eligibility.status === "eligible" ? formatMoney(eligibility.deliveryFee) : eligibility.status === "pickup_only" ? "Pickup only" : "Unavailable"}</strong></div><div className={styles.fact}><small>Ordering</small><strong>{currentOffer.orderingMode === "immediate" ? "Order now" : "Pre-order"}</strong></div></div>
     <div className={`${styles.notice} ${unavailable ? styles.noticeWarning : ""}`} role="status">{preview?.archived ? "This dish has been archived by the kitchen." : immediateClosed ? schedule.specialClosureNote || "The kitchen is closed for immediate orders right now." : remainingToday < 1 ? "This dish is sold out for today." : eligibilityText}</div>
     {Number.isFinite(remainingToday) ? <p className={styles.small}><strong>{remainingToday}</strong> portions remain in this frontend preview today.</p> : null}
@@ -41,5 +55,6 @@ export function DishControls({ areaName = "your area", dish, eligibility: initia
     <label className={styles.field}><span>Special instructions</span><textarea className={styles.textarea} maxLength={300} placeholder="Optional note for the kitchen" value={instructions} onChange={event=>setInstructions(event.target.value)}/></label>
     <div className={styles.split}><div><small className={styles.muted}>Total</small><div className={styles.price}>{formatMoney({...currentOffer.price,amount:total*quantity})}</div></div><div className={styles.quantity}><button type="button" onClick={()=>setQuantity(Math.max(1,quantity-1))} aria-label="Decrease quantity"><Minus/></button><output>{quantity}</output><button type="button" disabled={quantity >= remainingToday} onClick={()=>setQuantity(Math.min(remainingToday,quantity+1))} aria-label="Increase quantity"><Plus/></button></div></div>
     <Button block disabled={unavailable} onClick={()=>{if(unavailable)return;const selectedOptions=currentDish.optionGroups.flatMap(group=>group.choices.filter(choice=>selections[group.id]?.includes(choice.id)).map(choice=>({name:group.name,value:choice.name,priceDelta:choice.priceDelta})));addCartItem({vendorId:vendor.id,orderingMode:currentOffer.orderingMode},{id:`${currentOffer.id}:${JSON.stringify(selections)}`,dishId:currentDish.id,offerId:currentOffer.id,name:currentDish.name,imageUrl:currentDish.imageUrl,unitPrice:currentOffer.price,quantity,selectedOptions,...(instructions.trim()?{instructions:instructions.trim()}:{})});}}>{unavailable ? "Currently unavailable" : currentOffer.orderingMode === "meal_drop" ? "Add pre-order" : "Add to order"}</Button>
+    <Button type="button" variant="secondary" block onClick={()=>toggleSaveMeal(currentDish.id)} aria-pressed={saved}><Bookmark size={16} fill={saved ? "currentColor" : "none"} aria-hidden="true" style={{marginRight:6}}/>{saved ? "Saved in your collection ✓" : "Save meal to collection"}</Button>
   </div>;
 }

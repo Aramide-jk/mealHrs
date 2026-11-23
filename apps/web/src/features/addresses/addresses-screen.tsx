@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Status } from "@/components/ui/status";
 import styles from "@/features/account/account.module.css";
 import { validateAddressDraft, type AddressDraft } from "./address-validation";
+import { useCustomerActivity } from "@/lib/customer-activity-context";
 
 const emptyDraft: AddressDraft = { label: "", line1: "", area: "Ikotun", directions: "" };
 
 export function AddressesScreen({ initialAddresses }: Readonly<{ initialAddresses: readonly CustomerAddress[] }>) {
-  const [addresses, setAddresses] = useState([...initialAddresses]);
+  const { addresses: activityAddresses, saveAddress: persistAddress, setDefaultAddress: persistDefault } = useCustomerActivity();
+  const [addresses, setAddresses] = useState(() => activityAddresses.length > 0 ? [...activityAddresses] : [...initialAddresses]);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AddressDraft>(emptyDraft);
@@ -55,6 +57,7 @@ export function AddressesScreen({ initialAddresses }: Readonly<{ initialAddresse
       areaName: draft.area,
       isDefault: editingId ? Boolean(addresses.find((item) => item.id === editingId)?.isDefault) : false,
     };
+    persistAddress(next);
     setAddresses((current) => editingId ? current.map((item) => item.id === editingId ? next : item) : [...current, next]);
     setMessage(`${next.label} address saved in this frontend preview.`);
     setOpen(false);
@@ -65,6 +68,7 @@ export function AddressesScreen({ initialAddresses }: Readonly<{ initialAddresse
       setMessage("Ikeja is outside this kitchen’s delivery coverage, so the default was not changed.");
       return;
     }
+    persistDefault(address.id);
     setAddresses((current) => current.map((item) => ({ ...item, isDefault: item.id === address.id })));
     setMessage(`${address.label} is now the preview default address.`);
   };

@@ -12,6 +12,14 @@ export type PaymentPreview = Readonly<{
   subtotal: number;
   total: number;
   vendorName: string;
+  paymentMethod?: "card" | "bank_transfer" | "wallet" | undefined;
+  tip?: number | undefined;
+  cutlery?: boolean | undefined;
+  pickupDetails?: Readonly<{
+    address: string;
+    landmark?: string | undefined;
+    windowNote: string;
+  }> | undefined;
 }>;
 
 type CartState = {

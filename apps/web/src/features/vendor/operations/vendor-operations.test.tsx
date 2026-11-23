@@ -96,16 +96,16 @@ describe("vendor operations previews", () => {
 
   it("uses structured fulfillment times and requires a dish for a pre-order batch", () => {
     render(<VendorDropsView mealDrops={[]} menu={[{ dish: sampleDish, offer: sampleOffer }]} now="2026-11-14T10:00:00+01:00" />);
-    fireEvent.click(screen.getByRole("button", { name: "Create pre-order batch" }));
+    fireEvent.click(screen.getByRole("button", { name: /Create (pre-order batch|Meal Drop)/i }));
 
-    expect(screen.getByRole("heading", { name: "Create pre-order batch" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Create pre-order batch/i })).toBeInTheDocument();
     expect(screen.getByLabelText("Start time")).toHaveAttribute("type", "time");
     expect(screen.getByLabelText("End time")).toHaveAttribute("type", "time");
-    expect(screen.getByRole("button", { name: "Publish pre-order batch" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /(Publish pre-order batch|Publish drop preview)/i })).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Batch name"), { target: { value: "Sunday lunch" } });
+    fireEvent.change(screen.getByLabelText(/(Batch|Drop) name/i), { target: { value: "Sunday lunch" } });
     fireEvent.click(screen.getByRole("checkbox", { name: /Jollof Rice & Chicken/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Publish pre-order batch" }));
+    fireEvent.click(screen.getByRole("button", { name: /(Publish pre-order batch|Publish drop preview)/i }));
     expect(screen.getByRole("alert")).toHaveTextContent(/Select at least one menu dish/i);
   });
 

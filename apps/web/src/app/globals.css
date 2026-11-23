@@ -954,7 +954,10 @@ p {
   }
 
   .vendor-header-actions .button {
-    display: none;
+    display: inline-flex;
+    font-size: 0.72rem;
+    padding: 0 10px;
+    min-height: 32px;
   }
 
   .vendor-content {

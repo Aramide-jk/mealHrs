@@ -200,6 +200,7 @@ export function VendorDropsView({
         </div>
         <Button
           size="sm"
+          aria-label="Create Meal Drop"
           onClick={() => {
             setFormError("");
             setFulfillmentDate(nextWeekDefaultDate);
@@ -210,7 +211,7 @@ export function VendorDropsView({
           }}
         >
           <Plus aria-hidden="true" />
-          Create pre-order batch
+          Create Meal Drop
         </Button>
       </header>
 
@@ -351,9 +352,10 @@ export function VendorDropsView({
                   </p>
                 ) : null}
                 <label>
-                  Batch name
+                  Drop name
                   <input
                     name="name"
+                    aria-label="Drop name"
                     defaultValue={dialogMode.kind === "edit" ? dialogMode.drop.name : ""}
                     placeholder="e.g. Friday Smokehouse Jollof"
                     required
@@ -454,8 +456,8 @@ export function VendorDropsView({
                 {repeatWeekly ? <p className={styles.repeatHelp}>Creates a separate dated preview batch each week using this schedule. You can review each batch before it is available to customers.</p> : null}
 
                 <footer className={styles.dropDialogFooter}>
-                  <Button type="submit" block>
-                    {dialogMode.kind === "create" ? "Publish pre-order batch" : "Save pre-order batch"}
+                  <Button type="submit" block aria-label="Publish drop preview">
+                    {dialogMode.kind === "create" ? "Publish drop preview" : "Save pre-order batch"}
                   </Button>
                 </footer>
               </form>

@@ -18,4 +18,9 @@ describe("MealCard", () => {
     expect(screen.getByText("Cutoff passed")).toBeVisible();
     expect(screen.getByRole("link", { name: /Test Jollof/i })).toHaveAttribute("href", "/drops/drop-expired");
   });
+  it("renders a progressive cutoff pill when preorder cutoff is approaching", () => {
+    const offer: MenuOffer = { id: asOfferId("offer-soon"), dishId: dish.id, vendorId: dish.vendorId, orderingMode: "meal_drop", mealDropId: asMealDropId("drop-soon"), price: ngn(3500), availability: { status: "preorder", cutoffAt: "2026-11-07T18:00:00+01:00", fulfillmentWindow: "Sunday" }, availableFulfillment: ["delivery"] };
+    render(<MealCard dish={dish} offer={offer} now="2026-11-07T16:00:00+01:00" />);
+    expect(screen.getByText(/Cutoff in 2h/)).toBeVisible();
+  });
 });

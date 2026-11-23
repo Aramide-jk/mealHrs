@@ -16,6 +16,7 @@ type DeliveryPreviewContextValue = Readonly<{
   pickup: VendorPickupSettings | null;
   addZone: (zone: VendorDeliveryZone) => void;
   updateZone: (areaId: AreaId, update: (zone: VendorDeliveryZone) => VendorDeliveryZone) => void;
+  removeZone: (areaId: AreaId) => void;
   setPickup: (pickup: VendorPickupSettings) => void;
   resolve: (vendorId: VendorId, areaId: AreaId, orderingMode: "immediate" | "meal_drop") => DeliveryPreviewResult | null;
 }>;
@@ -26,6 +27,7 @@ const emptyContext: DeliveryPreviewContextValue = {
   pickup: null,
   addZone: () => undefined,
   updateZone: () => undefined,
+  removeZone: () => undefined,
   setPickup: () => undefined,
   resolve: () => null,
 };
@@ -47,6 +49,10 @@ export function DeliveryPreviewProvider({ children, dashboard }: Readonly<{ chil
     setZones((current) => current.map((zone) => zone.areaId === areaId ? update(zone) : zone));
   }, []);
 
+  const removeZone = useCallback((areaId: AreaId) => {
+    setZones((current) => current.filter((zone) => zone.areaId !== areaId));
+  }, []);
+
   const resolve = useCallback((targetVendorId: VendorId, areaId: AreaId, orderingMode: "immediate" | "meal_drop"): DeliveryPreviewResult | null => {
     if (!vendorId || targetVendorId !== vendorId || !pickup) return null;
     const zone = zones.find((item) => item.areaId === areaId);
@@ -56,12 +62,12 @@ export function DeliveryPreviewProvider({ children, dashboard }: Readonly<{ chil
       return { eligibility: { status: "eligible", vendorId, areaId, deliveryFee: zone.deliveryFee, estimate: zone.estimate }, minimumOrder: zone.minimumOrder, pickup };
     }
     if (pickupAvailable) {
-      return { eligibility: { status: "pickup_only", vendorId, areaId, pickupWindow: pickup.windowNote, reason: zone?.enabled ? `Delivery is not enabled for ${orderingMode === "immediate" ? "immediate orders" : "pre-orders"} in ${zone.name}.` : "Delivery is not available for this area." }, pickup };
+      return { eligibility: { status: "pickup_only", vendorId, areaId, pickupWindow: pickup.windowNote, reason: zone?.enabled ? `Delivery is not enabled for ${orderingMode === "immediate" ? "immediate orders" : "pre-orders"} in ${zone.name}.` : "This kitchen does not deliver to this area yet. Pickup is available." }, pickup };
     }
     return { eligibility: { status: "outside_area", vendorId, areaId, reason: zone ? `This kitchen is not accepting ${orderingMode === "immediate" ? "immediate orders" : "pre-orders"} for ${zone.name}.` : "This kitchen does not deliver to this area yet." }, pickup };
   }, [pickup, vendorId, zones]);
 
-  const value = useMemo<DeliveryPreviewContextValue>(() => ({ vendorId, zones, pickup, addZone, updateZone, setPickup, resolve }), [vendorId, zones, pickup, addZone, updateZone, resolve]);
+  const value = useMemo<DeliveryPreviewContextValue>(() => ({ vendorId, zones, pickup, addZone, updateZone, removeZone, setPickup, resolve }), [vendorId, zones, pickup, addZone, updateZone, removeZone, setPickup, resolve]);
   return <DeliveryPreviewContext.Provider value={value}>{children}</DeliveryPreviewContext.Provider>;
 }
 

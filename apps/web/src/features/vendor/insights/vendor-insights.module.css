@@ -134,12 +134,68 @@
 }
 
 .zone {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 12px 0;
   border-top: 1px solid var(--color-line);
+}
+
+.zoneActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoneRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.zoneRemove:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: #efd1d1;
+}
+
+.pillGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.pillOption {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.pillOptionActive {
+  background: var(--color-green-050);
+  border-color: var(--color-green-600);
+  color: var(--color-green-700);
+  font-weight: 600;
 }
 
 .zone:first-child {
@@ -399,6 +455,90 @@
   border-top: 0;
 }
 
+.storeLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.storePreviewCard {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-small);
+}
+
+.storeBanner {
+  position: relative;
+  height: 130px;
+  background: var(--color-surface-soft);
+  overflow: hidden;
+}
+
+.storeBanner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.storeBody {
+  padding: 16px;
+  position: relative;
+}
+
+.storeAvatar {
+  width: 52px;
+  height: 52px;
+  margin-top: -38px;
+  margin-bottom: 10px;
+  border: 3px solid var(--color-surface);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-green-050);
+  box-shadow: var(--shadow-small);
+}
+
+.storeAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.coverGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.coverOption {
+  border: 2px solid var(--color-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  height: 64px;
+  position: relative;
+  transition: all 120ms ease;
+}
+
+.coverOption img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.coverOptionActive {
+  border-color: var(--color-green-600);
+  box-shadow: 0 0 0 2px rgba(45, 122, 79, 0.2);
+}
+
 .setting h3 {
   margin: 0 0 3px;
   font-size: 0.78rem;
@@ -574,7 +714,8 @@
   .grid2,
   .analytics,
   .formGrid,
-  .customerGrid {
+  .customerGrid,
+  .storeLayout {
     grid-template-columns: 1fr;
   }
 
@@ -587,11 +728,14 @@
   }
 
   .zone {
-    grid-template-columns: minmax(0, 1fr) auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 
-  .zone > span {
-    display: none;
+  .zoneActions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .ledgerRow {

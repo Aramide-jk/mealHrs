@@ -9,6 +9,7 @@ import { Status } from "@/components/ui/status";
 import styles from "../discovery/discovery.module.css";
 import { addCartItem } from "@/features/cart/cart-store";
 import { isCutoffPassed } from "./effective-availability";
+import { CutoffCountdownBanner } from "./cutoff-countdown-banner";
 import { useMenuPreview } from "@/lib/menu-preview-context";
 import { useDeliveryPreview } from "@/lib/delivery-preview-context";
 
@@ -29,7 +30,7 @@ export function DropControls({ areaName = "your area", eligibility: initialEligi
   const eligibilityText=eligibility.status==="eligible"?`Delivery is available to ${areaName} · ${eligibility.estimate}`:eligibility.status==="pickup_only"?`${eligibility.reason} ${eligibility.pickupWindow}`:eligibility.reason;
   return <div className={`${styles.detailPanel} ${styles.stack}`}>
     <div><Status tone={closed ? "neutral" : "warning"}>{statusLabel}</Status><h1>{mealDrop.name}</h1><p className={styles.small}><Link href={`/k/${vendor.slug}`}>{vendor.name}</Link> · Scheduled pre-order</p><p>{mealDrop.description}</p></div>
-    <div className={styles.dropBanner} role="status"><strong>Order cutoff: {new Intl.DateTimeFormat("en-NG",{dateStyle:"medium",timeStyle:"short",timeZone:mealDrop.timezone}).format(new Date(mealDrop.cutoffAt))} WAT</strong><br/>{mealDrop.fulfillmentDate} · {mealDrop.fulfillmentWindow} WAT · {mealDrop.remainingCapacity} of {mealDrop.capacity} spaces remain.</div>
+    <CutoffCountdownBanner cutoffAt={mealDrop.cutoffAt} initialNow={now} fulfillmentDate={mealDrop.fulfillmentDate} fulfillmentWindow={mealDrop.fulfillmentWindow} remainingCapacity={mealDrop.remainingCapacity} capacity={mealDrop.capacity} />
     <div className={styles.detailFacts}><div className={styles.fact}><small>Fulfillment</small><strong>{mealDrop.fulfillmentDate}</strong></div><div className={styles.fact}><small>{pickupOnly?"Collection":"Delivery"}</small><strong>{pickupOnly?"Pickup only":outside?"Unavailable":areaName}</strong></div><div className={styles.fact}><small>Capacity</small><strong>{mealDrop.remainingCapacity}/{mealDrop.capacity}</strong></div></div>
     <div className={`${styles.notice} ${(closed||outside||schedule.pausePreorders)?styles.noticeWarning:""}`}>{schedule.pausePreorders ? "Pre-orders are paused by this kitchen in the frontend preview." : closed ? `Ordering is closed because this pre-order is ${statusLabel.toLowerCase()}.` : eligibilityText}</div>
     <fieldset className={styles.stack} style={{border:0,padding:0}} disabled={disabled}><legend className={styles.small}>Choose your meal</legend>{selections.map(item=><label className={styles.choice} key={item.offer.id}><input type="radio" name="drop-meal" checked={selectedId===item.offer.id} onChange={()=>setSelectedId(item.offer.id)}/><span><strong>{item.dish.name}</strong><small>{formatMoney(item.offer.price)} · Limit {item.quantityLimit}</small></span></label>)}</fieldset>

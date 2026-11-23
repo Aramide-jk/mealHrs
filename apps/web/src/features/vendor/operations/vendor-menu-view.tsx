@@ -116,7 +116,7 @@ export function VendorMenuView({
     const name = String(form.get("name") ?? "").trim();
     const categoryChoice = String(form.get("category") ?? "").trim();
     const customCategory = String(form.get("customCategory") ?? "").trim();
-    const category = categoryChoice === "other" ? customCategory : categoryChoice;
+    const category = (categoryChoice === "other" ? customCategory : categoryChoice).trim() || "Kitchen special";
     const description =
       String(form.get("description") ?? "").trim() || "Prepared fresh to order in small batches.";
     const price = Number(form.get("price"));
@@ -672,12 +672,10 @@ function AddDishDialog({
                 Category
                 <select
                   name="category"
-                  required
-                  defaultValue=""
+                  defaultValue="Kitchen special"
                   aria-describedby="category-help"
                   onChange={(event) => setCustomCategory(event.target.value === "other")}
                 >
-                  <option value="" disabled>Choose a menu category</option>
                   {menuCategories.map((category) => (
                     <option key={category} value={category}>{category}</option>
                   ))}

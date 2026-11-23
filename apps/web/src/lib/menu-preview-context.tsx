@@ -104,8 +104,9 @@ export function MenuPreviewProvider({ children, dashboard }: Readonly<{ children
 
 export function useMenuPreview() { return useContext(MenuPreviewContext); }
 
-export function isImmediateOrderingOpen(schedule: VendorOperatingSchedule, now = new Date()) {
+export function isImmediateOrderingOpen(schedule: VendorOperatingSchedule, now?: Date) {
   if (schedule.pauseImmediate || schedule.specialClosureNote.trim()) return false;
+  if (!now) return true;
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: "Africa/Lagos" }).format(now);
   const hours = schedule.weeklyHours.find((entry) => entry.day === weekday);
   if (!hours?.open) return false;
